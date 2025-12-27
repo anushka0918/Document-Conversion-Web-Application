@@ -72,12 +72,13 @@ CONVERTER_PROJECT/
 ├── 📂 uploads/                     # Temporary storage for uploaded PDFs
 ├── 📂 outputs/                     # Generated DOCX files storage
 │
-├── 📋 requirement.txt              # Python dependencies list
-├── ⚙️ Procfile                     # Heroku deployment configuration
-├── 🐍 runtime.txt                  # Python version for Heroku
-├── 🚫 .gitignore                   # Git ignore rules
-├── 📖 README.md                    # Project documentation (this file)
-└── 📝 pdf_conversion.log           # Application logs and history
+├──  requirement.txt              # Python dependencies list
+├──  Procfile                     # Heroku deployment configuration
+├──  runtime.txt                  # Python version for Heroku
+├──  render.yaml                  # Render.com deployment config
+├──  .gitignore                   # Git ignore rules
+├──  README.md                    # Project documentation (this file)
+└──  pdf_conversion.log           # Application logs and history
 ````
 
 ---
@@ -105,15 +106,60 @@ python cli.py input.pdf output.docx
 
 ---
 
-## 🛠️ Technology Stack
+ ## 🛠️ Technology Stack
 
-- **Backend**: Python 3.11, Flask 3.0
-- **Conversion Engine**: pdf2docx 0.5.8, python-docx 0.8.11
-- **Server**: Gunicorn 21.2 (Production), Werkzeug 3.0
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **DevOps**: Heroku, Git
+### Backend
+- **Runtime**: Python 3.11.7
+- **Framework**: Flask 3.0.0
+- **Web Server**: Gunicorn 21.2.0 (Production)
+- **Development Server**: Werkzeug 3.0.1
+
+### PDF Processing
+- **Primary Converter**: pdf2docx 0.5.8 (high-quality conversion with images)
+- **Fallback Converter**: PyPDF2 3.0.1 (lightweight text extraction)
+- **Document Creation**: python-docx 1.1.0
+
+### Optimization & Monitoring
+- **Memory Management**: psutil 5.9.6 (RAM monitoring & limits)
+- **Garbage Collection**: Aggressive cleanup for 512MB free tier
+
+### Frontend
+- **UI**: HTML5, CSS3 (inline & template-based)
+- **Interactivity**: Vanilla JavaScript (ES6+)
+- **Design**: Responsive, mobile-friendly interface
+
+### Deployment & DevOps
+- **Hosting**: Render.com (Free Tier - 512MB RAM)
+- **Alternative**: Heroku, Railway.app compatible
+- **CI/CD**: GitHub auto-deployment via webhooks
+- **Configuration**: Environment-based (MAX_MEMORY_MB=400)
+
 
 ---
+
+## ⚡ Performance & Optimization
+
+### Memory Management
+- **Limit**: 400MB working memory (safe for 512MB tier)
+- **Monitoring**: Real-time RAM tracking with psutil
+- **Auto-Fallback**: Switches to PyPDF2 if pdf2docx exceeds limits
+- **Cleanup**: Aggressive garbage collection after each conversion
+
+### Conversion Speed
+| PDF Size | Pages | Time | Memory | Quality |
+|----------|-------|------|--------|---------|
+| Small | 1-3 pages | 3-4s | ~150MB | High (with images) |
+| Medium | 5-10 pages | 8-12s | ~200MB | High (with images) |
+| Large | 10-20 pages | 15-30s | ~300MB | Medium (text-only fallback) |
+| Very Large | 20+ pages | 30-60s | ~400MB | Text-only |
+
+### Deployment Features
+- Single-worker configuration (low memory footprint)
+- 120-second timeout for large files
+-  Auto-restart after 10 requests (prevents memory leaks)
+-  Graceful degradation (text-only if OOM)
+-  Health check endpoint (`/health`)
+
 
 ## ⚙️ Configuration Options
 
