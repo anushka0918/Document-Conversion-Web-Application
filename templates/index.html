@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to DOCX Converter</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            margin: 10px 0;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .features {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .features li {
+            padding: 5px 0;
+        }
+
+        .features li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 PDF to DOCX Converter</h1>
+        <p class="subtitle">Convert your PDF files to editable Word documents</p>
+
+        <form action="/convert" method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📄</div>
+                <p>Click to select a PDF file</p>
+                <p style="font-size: 12px; color: #999; margin-top: 5px;">or drag and drop here</p>
+                <p class="file-name" id="fileName"></p>
+            </div>
+
+            <input type="file" name="pdf_file" id="fileInput" accept=".pdf" required>
+
+            <button type="submit" id="convertBtn">Convert to DOCX</button>
+        </form>
+
+        <div class="info">
+            <strong>Features:</strong>
+            <ul class="features">
+                <li>Preserves images and formatting</li>
+                <li>Maintains tables and layout</li>
+                <li>Keeps original fonts and colors</li>
+                <li>Fast and secure conversion</li>
+            </ul>
+            <p style="margin-top: 10px;"><small>Maximum file size: 50 MB</small></p>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const form = document.getElementById('uploadForm');
+        const convertBtn = document.getElementById('convertBtn');
+
+        fileInput.addEventListener('change', function (e) {
+            if (this.files && this.files[0]) {
+                fileName.textContent = '📄 ' + this.files[0].name;
+            }
+        });
+
+        // ✅ FIXED: Handle form submission with AJAX
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault(); // Prevent page reload
+
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a PDF file first!');
+                return;
+            }
+
+            // Disable button and show loading
+            convertBtn.disabled = true;
+            convertBtn.textContent = '⏳ Converting...';
+
+            try {
+                // Create form data
+                const formData = new FormData();
+                formData.append('pdf_file', file);
+
+                // Send request
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Conversion failed');
+                }
+
+                // Get the converted file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                // Create download link
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name.replace('.pdf', '.docx');
+                document.body.appendChild(a);
+                a.click();
+
+                // Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // ✅ SUCCESS: Reset everything
+                form.reset();
+                fileName.textContent = '📁 Choose a file or drag it here';
+                convertBtn.disabled = false;
+                convertBtn.textContent = '🔄 Convert to DOCX';
+
+                // Optional: Show success message
+                alert('✅ Conversion successful! File downloaded.');
+
+            } catch (error) {
+                // ❌ ERROR: Reset button and show error
+                alert('❌ Error: ' + error.message);
+                convertBtn.disabled = false;
+                convertBtn.textContent = '🔄 Convert to DOCX';
+            }
+        });
+
+        // Drag and drop
+        const uploadArea = document.querySelector('.upload-area');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#f8f9ff';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = 'white';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'white';
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                fileName.textContent = '📄 ' + e.dataTransfer.files[0].name;
+            }
+        });
+    </script>
+
+</body>
+
+</html>
+
+
+
+ 

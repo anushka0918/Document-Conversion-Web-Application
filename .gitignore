@@ -1,0 +1,16 @@
+# Virtual environment
+.venv/
+venv/
+__pycache__/
+
+# Test files
+*.pdf
+*.docx
+outputs/
+uploads/
+
+# Logs
+*.log
+
+# Environment
+.env
