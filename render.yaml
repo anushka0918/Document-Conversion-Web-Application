@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: pdf-to-docx-converter
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 1 --timeout 120 --log-level info
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: MAX_MEMORY_MB
+        value: 400
